@@ -1,0 +1,12 @@
+"use client";
+
+import { SectionCard } from "@/components/shared/layout/SectionCard";
+import Input from "@/components/shared/input/Input";
+import type { NavbarState } from "../types";
+
+type Props = { state: NavbarState; update: <K extends keyof NavbarState>(key: K, value: NavbarState[K]) => void };
+
+export default function BasicsSection({ state, update }: Props) {
+  return <SectionCard title="Basics" subtitle="Basics controls for native layout/page-structure generation."><Input label="Title" value={state.title} onChange={(value) => update("title", value)} />
+<Input label="Description" value={state.description} onChange={(value) => update("description", value)} /></SectionCard>;
+}
