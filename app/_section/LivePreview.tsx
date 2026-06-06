@@ -4,30 +4,83 @@ import type { CSSProperties } from "react";
 import type { NavbarState } from "../types";
 
 function box(state: NavbarState): CSSProperties {
-  return { width: state.width, minHeight: state.height, padding: state.padding, margin: state.margin, gap: state.gap, borderRadius: state.radius, border: `${state.borderWidth}px solid ${state.border}`, boxShadow: `0 ${Math.round(state.shadow / 3)}px ${state.shadow}px rgba(0,0,0,.28)`, background: state.background, color: state.foreground, fontFamily: state.fontFamily };
+  return {
+    width: state.width,
+    minHeight: state.previewState === "mobile" ? state.height : "auto",
+    padding: state.padding,
+    margin: state.margin,
+    gap: state.gap,
+    borderRadius: state.radius,
+    border: `${state.borderWidth}px solid ${state.border}`,
+    boxShadow: `0 ${Math.round(state.shadow / 3)}px ${state.shadow}px rgba(0,0,0,.28)`,
+    background: state.background,
+    color: state.foreground,
+    fontFamily: state.fontFamily,
+    position: state.sticky ? "sticky" : "relative",
+    top: state.sticky ? 0 : undefined,
+    transition: state.motion ? "all 180ms ease" : undefined,
+  };
 }
 
 export default function LivePreview({ state }: { state: NavbarState }) {
-  const model = state as Record<string, unknown>;
-  const numberValue = (key: string, fallback: number) => typeof model[key] === "number" ? model[key] : fallback;
-  const stringValue = (key: string, fallback: string) => typeof model[key] === "string" ? model[key] : fallback;
-  const boolValue = (key: string, fallback = false) => typeof model[key] === "boolean" ? model[key] : fallback;
-  const count = numberValue("itemCount", numberValue("navCount", numberValue("linkCount", numberValue("columnCount", 4))));
-  const items = Array.from({ length: count }, (_, index) => index + 1);
+  const navItems = Array.from({ length: state.navCount }, (_, index) => `Link ${index + 1}`);
+  const activeIndex = Math.max(0, Math.min(state.activeIndex, navItems.length - 1));
   const style = box(state);
-  if (stringValue("role", "") === "separator" || "orientation" in model) {
-    const orientation = stringValue("orientation", "horizontal") as "horizontal" | "vertical";
-    const length = numberValue("length", state.width);
-    const thickness = numberValue("thickness", state.borderWidth || 1);
-    return <div role={boolValue("decorative") ? "presentation" : "separator"} aria-orientation={orientation} style={{ ...style, minHeight: orientation === "vertical" ? length : thickness, width: orientation === "vertical" ? thickness : length, padding: 0, background: state.accent }} />;
-  }
-  if ("axis" in model) {
-    const axis = stringValue("axis", "block");
-    const size = numberValue("size", 72);
-    const thickness = numberValue("thickness", 1);
-    return <div aria-hidden={boolValue("decorative")} role={boolValue("decorative") ? "presentation" : "separator"} style={{ ...style, minHeight: axis === "inline" ? thickness : size, width: axis === "block" ? "100%" : size, display: "grid", placeItems: "center" }}>{boolValue("debugVisible") ? stringValue("token", "space") : ""}</div>;
-  }
-  const gridColumns = "columns" in model ? `repeat(${numberValue("columns", 3)}, minmax(0, 1fr))` : undefined;
-  const isFlex = "direction" in model;
-  return <section id={state.id} role={state.role === "presentation" ? undefined : state.role} aria-label={state.landmarkLabel} tabIndex={state.tabIndex} style={style} className="grid content-center"><h3 style={{ fontSize: state.titleSize, fontWeight: state.fontWeight }}>{state.title}</h3><p style={{ color: state.muted, fontSize: state.bodySize }}>{state.description}</p><div className="grid gap-3" style={{ gridTemplateColumns: gridColumns, display: isFlex ? "flex" : undefined, flexDirection: isFlex ? stringValue("direction", "row") as CSSProperties["flexDirection"] : undefined, flexWrap: "wrap" in model ? stringValue("wrap", "wrap") as CSSProperties["flexWrap"] : undefined, justifyContent: "justify" in model ? stringValue("justify", "center") as CSSProperties["justifyContent"] : undefined, alignItems: "align" in model ? stringValue("align", "stretch") as CSSProperties["alignItems"] : undefined }}>{items.map((item) => <div key={item} className="rounded-xl border p-3" style={{ borderColor: state.border, background: "rgba(255,255,255,.06)" }}>Item {item}</div>)}</div></section>;
+  const isMobile = state.previewState === "mobile";
+  const isCollapsed = state.previewState === "collapsed" || (isMobile && state.mobileMode === "collapse");
+  const showDrawer = state.previewState === "mobile" && state.mobileMode === "drawer";
+
+  return (
+    <nav id={state.id} aria-label={state.landmarkLabel} tabIndex={state.tabIndex} style={style}>
+      <div className="flex flex-wrap items-center justify-between" style={{ gap: state.gap }}>
+        <a href="#" className="font-semibold" style={{ color: state.foreground, fontSize: state.titleSize, fontWeight: state.fontWeight }}>
+          {state.title}
+        </a>
+        <button
+          type="button"
+          aria-expanded={showDrawer || !isCollapsed}
+          className="rounded-full border px-3 py-2 text-sm font-semibold sm:hidden"
+          style={{ borderColor: state.border, color: state.foreground, background: showDrawer ? state.accent : "transparent" }}
+        >
+          Menu
+        </button>
+        <div
+          className={isMobile && state.mobileMode === "stack" ? "grid w-full" : "hidden items-center sm:flex"}
+          style={{
+            gap: state.gap,
+            display: isMobile || !isCollapsed ? undefined : "none",
+          }}
+        >
+          {navItems.map((item, index) => {
+            const active = index === activeIndex || (state.previewState === "active" && index === 0);
+            return (
+              <a
+                key={item}
+                href="#"
+                aria-current={active ? "page" : undefined}
+                className="rounded-full px-3 py-2 text-sm font-medium"
+                style={{
+                  color: active || state.previewState === "hover" ? state.foreground : state.muted,
+                  background: active ? state.accent : state.previewState === "hover" && index === 0 ? "rgba(255,255,255,.12)" : "transparent",
+                  outline: state.previewState === "focus" && index === activeIndex ? `2px solid ${state.accent}` : undefined,
+                  outlineOffset: state.previewState === "focus" && index === activeIndex ? 3 : undefined,
+                }}
+              >
+                {item}
+                {state.hasDropdowns && index === 1 ? " +" : ""}
+              </a>
+            );
+          })}
+        </div>
+        <div className="flex items-center" style={{ gap: Math.max(8, state.gap / 2) }}>
+          <a href="#" className="text-sm font-medium" style={{ color: state.muted }}>
+            Log in
+          </a>
+          <a href="#" className="rounded-full px-4 py-2 text-sm font-semibold" style={{ background: state.accent, color: state.background }}>
+            Start
+          </a>
+        </div>
+      </div>
+    </nav>
+  );
 }
