@@ -17,5 +17,5 @@ export default function StatesSection({ state, update }: Props) {
   "mobile",
   "overflow"
 ]} onChange={(value) => update("previewState", value)} />
-<Switch label="Motion safe transition" checked={state.motion} onChange={(value) => update("motion", value)} /></SectionCard>;
+</SectionCard>;
 }
