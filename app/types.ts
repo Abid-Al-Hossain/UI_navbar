@@ -1,4 +1,4 @@
-export type SectionId = "presets" | "basics" | "metadata" | "structure" | "layout" | "sizing" | "spacing" | "surface" | "colors" | "border" | "radius" | "shadow" | "typography" | "states" | "accessibility";
+export type SectionId = "presets" | "basics" | "metadata" | "structure" | "layout" | "sizing" | "spacing" | "surface" | "colors" | "border" | "radius" | "shadow" | "typography" | "states" | "disabled" | "accessibility";
 
 export type NavbarState = {
   description: string;
@@ -54,6 +54,13 @@ export type NavbarState = {
   titleSize: number;
   bodySize: number;
   fontWeight: number;
+  disabled: boolean;
+  disabledOpacity: number;
+  disabledCursor: "not-allowed" | "default" | "pointer";
+  disabledUseCustomColors: boolean;
+  disabledBg: string;
+  disabledText: string;
+  disabledBorder: string;
   previewState: "default" | "hover" | "focus" | "active" | "collapsed" | "mobile" | "overflow";
   title: string;
   element: "div" | "section" | "main" | "header" | "footer" | "aside" | "nav" | "hr";
@@ -124,6 +131,10 @@ export const SECTIONS: Array<{ id: SectionId; label: string }> = [
   {
     "id": "states",
     "label": "State Preview"
+  },
+  {
+    "id": "disabled",
+    "label": "Disabled"
   },
   {
     "id": "accessibility",

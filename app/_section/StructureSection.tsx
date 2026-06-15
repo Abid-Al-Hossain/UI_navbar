@@ -2,10 +2,21 @@
 
 import { SectionCard } from "@/components/shared/layout/SectionCard";
 import Slider from "@/components/shared/input/Slider";
+import Switch from "@/components/shared/input/Switch";
 import type { NavbarState } from "../types";
 
 type Props = { state: NavbarState; update: <K extends keyof NavbarState>(key: K, value: NavbarState[K]) => void };
 
 export default function StructureSection({ state, update }: Props) {
-  return <SectionCard title="Structure" subtitle="Structure controls for native layout/page-structure generation."><Slider label="Nav items" value={state.navCount} min={1} max={10} step={1} onChange={(value) => update("navCount", value)} /></SectionCard>;
+  return (
+    <div className="space-y-4">
+      <SectionCard title="Items" subtitle="Nav item count and active item.">
+        <Slider label="Nav items" value={state.navCount} min={1} max={10} step={1} onChange={(value) => update("navCount", value)} />
+        <Slider label="Active index" value={state.activeIndex} min={0} max={Math.max(0, state.navCount - 1)} step={1} onChange={(value) => update("activeIndex", value)} />
+      </SectionCard>
+      <SectionCard title="Dropdowns" subtitle="Whether nav items show dropdown indicators.">
+        <Switch label="Has dropdowns" checked={state.hasDropdowns} onChange={(value) => update("hasDropdowns", value)} />
+      </SectionCard>
+    </div>
+  );
 }
