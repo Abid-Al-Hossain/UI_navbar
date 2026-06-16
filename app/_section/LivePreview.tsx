@@ -1,6 +1,6 @@
 "use client";
 
-import type { CSSProperties } from "react";
+import { useState, type CSSProperties } from "react";
 import type { NavbarState } from "../types";
 import { SYSTEM_FONTS } from "@/components/shared/typography/fontConstants";
 
@@ -53,11 +53,14 @@ export default function LivePreview({ state }: { state: NavbarState }) {
   const isMobile = state.previewState === "mobile";
   const isCollapsed = state.previewState === "collapsed" || (isMobile && state.mobileMode === "collapse");
   const showDrawer = state.previewState === "mobile" && state.mobileMode === "drawer";
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   return (
     <nav id={state.id} aria-label={state.landmarkLabel} tabIndex={state.tabIndex} style={style}>
       <div className="flex flex-wrap items-center justify-between" style={{ gap: state.gap }}>
-        <a href="#" className="font-semibold" style={{ color: state.foreground, fontSize: state.titleSize, fontWeight: state.fontWeight }}>
+        <a href="#" className="flex items-center font-semibold" style={{ color: state.foreground, fontSize: state.titleSize, fontWeight: state.fontWeight, gap: Math.max(6, state.gap / 3) }}>
+          <span aria-hidden="true" style={{ width: state.logoSize, height: state.logoSize, borderRadius: state.logoRadius, background: state.accent, flexShrink: 0 }} />
           {state.title}
         </a>
         <button
@@ -73,26 +76,71 @@ export default function LivePreview({ state }: { state: NavbarState }) {
           style={{
             gap: state.gap,
             display: isMobile || !isCollapsed ? undefined : "none",
+            background: isMobile ? state.mobileMenuBg : undefined,
+            border: isMobile ? `1px solid ${state.mobileMenuBorder}` : undefined,
+            borderRadius: isMobile ? 12 : undefined,
+            padding: isMobile ? state.padding : undefined,
           }}
         >
           {navItems.map((item, index) => {
             const active = index === activeIndex || (state.previewState === "active" && index === 0);
+            const isHovered = hoveredIndex === index || (state.previewState === "hover" && index === 0);
+            const isDropdownTrigger = state.hasDropdowns && index === 1;
             return (
-              <a
-                key={item}
-                href="#"
-                aria-current={active ? "page" : undefined}
-                className="rounded-full px-3 py-2 text-sm font-medium"
-                style={{
-                  color: active || state.previewState === "hover" ? state.foreground : state.muted,
-                  background: active ? state.accent : state.previewState === "hover" && index === 0 ? "rgba(255,255,255,.12)" : "transparent",
-                  outline: state.previewState === "focus" && index === activeIndex ? `2px solid ${state.accent}` : undefined,
-                  outlineOffset: state.previewState === "focus" && index === activeIndex ? 3 : undefined,
-                }}
-              >
-                {item}
-                {state.hasDropdowns && index === 1 ? " +" : ""}
-              </a>
+              <div key={item} style={{ position: "relative" }}>
+                <a
+                  href="#"
+                  aria-current={active ? "page" : undefined}
+                  aria-expanded={isDropdownTrigger ? dropdownOpen : undefined}
+                  className="rounded-full px-3 py-2 text-sm font-medium"
+                  style={{
+                    color: active ? state.activeItemText : isHovered ? state.hoverItemText : state.muted,
+                    background: active ? state.activeItemBg : isHovered ? state.hoverItemBg : "transparent",
+                    border: `1px solid ${active ? state.activeItemBorder : isHovered ? state.hoverItemBorder : "transparent"}`,
+                    outline: state.previewState === "focus" && index === activeIndex ? `2px solid ${state.accent}` : undefined,
+                    outlineOffset: state.previewState === "focus" && index === activeIndex ? 3 : undefined,
+                    position: "relative",
+                  }}
+                  onMouseEnter={() => {
+                    setHoveredIndex(index);
+                    if (isDropdownTrigger) setDropdownOpen(true);
+                  }}
+                  onMouseLeave={() => {
+                    setHoveredIndex(null);
+                    if (isDropdownTrigger) setDropdownOpen(false);
+                  }}
+                >
+                  {item}
+                  {isDropdownTrigger ? " +" : ""}
+                  {active && (
+                    <span aria-hidden="true" style={{ position: "absolute", left: 12, right: 12, bottom: -1, height: state.indicatorHeight, background: state.indicatorColor, borderRadius: 999 }} />
+                  )}
+                </a>
+                {isDropdownTrigger && dropdownOpen && (
+                  <div
+                    role="menu"
+                    style={{
+                      position: "absolute",
+                      top: "100%",
+                      left: 0,
+                      marginTop: 4,
+                      minWidth: 160,
+                      background: state.dropdownBg,
+                      border: `1px solid ${state.dropdownBorder}`,
+                      borderRadius: 10,
+                      boxShadow: state.dropdownShadow,
+                      padding: 6,
+                      zIndex: 20,
+                    }}
+                  >
+                    {["Sub item 1", "Sub item 2", "Sub item 3"].map((sub) => (
+                      <a key={sub} href="#" role="menuitem" className="block rounded-lg px-3 py-2 text-sm" style={{ color: state.foreground }}>
+                        {sub}
+                      </a>
+                    ))}
+                  </div>
+                )}
+              </div>
             );
           })}
         </div>

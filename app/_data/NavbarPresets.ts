@@ -65,7 +65,22 @@ export const DEFAULT_NAVBAR_STATE: NavbarState = {
   "activeIndex": 2,
   "hasDropdowns": true,
   "sticky": true,
-  "mobileMode": "collapse"
+  "mobileMode": "collapse",
+  "activeItemBg": "#38bdf8",
+  "activeItemText": "#0f172a",
+  "activeItemBorder": "transparent",
+  "hoverItemBg": "rgba(255,255,255,0.12)",
+  "hoverItemText": "#f8fafc",
+  "hoverItemBorder": "transparent",
+  "mobileMenuBg": "#0f172a",
+  "mobileMenuBorder": "#1e293b",
+  "logoSize": 28,
+  "logoRadius": 8,
+  "indicatorColor": "#38bdf8",
+  "indicatorHeight": 2,
+  "dropdownBg": "#1e293b",
+  "dropdownBorder": "#334155",
+  "dropdownShadow": "0 12px 24px rgba(0,0,0,0.35)"
 };
 
 export const NAVBAR_PRESETS: StudioPreset[] = [

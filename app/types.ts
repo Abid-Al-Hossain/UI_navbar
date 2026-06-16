@@ -71,6 +71,21 @@ export type NavbarState = {
   hasDropdowns: boolean;
   sticky: boolean;
   mobileMode: "collapse" | "drawer" | "stack";
+  activeItemBg: string;
+  activeItemText: string;
+  activeItemBorder: string;
+  hoverItemBg: string;
+  hoverItemText: string;
+  hoverItemBorder: string;
+  mobileMenuBg: string;
+  mobileMenuBorder: string;
+  logoSize: number;
+  logoRadius: number;
+  indicatorColor: string;
+  indicatorHeight: number;
+  dropdownBg: string;
+  dropdownBorder: string;
+  dropdownShadow: string;
 };
 
 export type StudioPreset = { id: string; family: string; archetype: string; variant: string; size: string; tags: string[]; state: Partial<NavbarState> & Record<string, unknown> };
